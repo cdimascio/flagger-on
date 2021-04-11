@@ -1,0 +1,23 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+      "target": "ES2019",
+      "lib": ["ES2020"],
+      "strict": true,
+      "module": "commonjs",
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "sourceMap": true,
+      "moduleResolution": "node",
+      "outDir": "dist",
+      "typeRoots": ["node_modules/@types"],
+      "resolveJsonModule": true,
+      "baseUrl": "."
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": [
+      "node_modules",
+      "**/*.spec.ts"
+    ]
+  }
+  

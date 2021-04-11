@@ -1,0 +1,30 @@
+{
+  "name": "infrastructure",
+  "version": "0.1.0",
+  "bin": {
+    "infrastructure": "bin/infrastructure.js"
+  },
+  "scripts": {
+    "watch": "tsc -w",
+    "clean": "find ./lib/ -name '*.d.ts' -delete && find ./lib/ -name '*.js' -delete",
+    "build": "npm run clean && (export CDK_DEPLOY_REGION=us-west-2 && tsc && cdk synth -o cdk.out)",
+    "deploy": "(export CDK_DEPLOY_REGION=us-west-2 NODE_ENV=development tsc && cdk deploy FeatureTogglerStack)",
+    "test": "jest",
+    "cdk": "cdk"
+  },
+  "devDependencies": {
+    "@aws-cdk/assert": "1.97.0",
+    "@types/jest": "^26.0.10",
+    "@types/node": "10.17.27",
+    "aws-cdk": "1.97.0",
+    "jest": "^26.4.2",
+    "ts-jest": "^26.2.0",
+    "ts-node": "^9.0.0",
+    "typescript": "~3.9.7"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-dynamodb": "1.97.0",
+    "@aws-cdk/core": "1.97.0",
+    "source-map-support": "^0.5.16"
+  }
+}

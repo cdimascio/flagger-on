@@ -2,11 +2,11 @@
   "name": "flagger-on",
   "version": "0.9.2",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "ts-node test/client",
     "build": "npm run compile",
-    "compile": "tsc",
+    "compile": "rm -rf dist && tsc",
     "test": "mocha -r ts-node/register \"test/*.spec.ts\" --exit"
   },
   "keywords": [],

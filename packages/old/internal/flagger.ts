@@ -1,46 +1,46 @@
 import AWS from "aws-sdk";
 
-export interface FeatureFlagOpts {
+export interface InternalFeatureFlagOpts {
   region: string;
 }
 
-export interface Options {
+export interface InternalOptions {
   [key: string]: any;
 }
 
-export interface FeatureFlag {
+export interface InternalFeatureFlag {
   namespace: string;
   featureId: string;
   customerId?: string;
   enabled: boolean;
-  options: Options;
+  options: InternalOptions;
 }
 
-export interface FeatureFlagKey {
+export interface InternalFeatureFlagKey {
   namespace: string;
   featureId: string;
   customerId?: string;
 }
 
-export interface CreateFeatureFlagOpts extends FeatureFlagKey {
+export interface InternalCreateFeatureFlagOpts extends InternalFeatureFlagKey {
   enabled: boolean;
-  options?: Options;
+  options?: InternalOptions;
   overwrite: boolean;
 }
 
-export interface FeatureFlagOptionsOpts extends FeatureFlagKey {
-  options?: Options;
+export interface InternalFeatureFlagOptionsOpts extends InternalFeatureFlagKey {
+  options?: InternalOptions;
 }
 
-interface UpdateFeatureFlagOpts extends FeatureFlagKey {
-  options?: Options;
+interface InternalUpdateFeatureFlagOpts extends InternalFeatureFlagKey {
+  options?: InternalOptions;
   enabled?: boolean;
 }
 
 const TableName = "FeatureFlag";
-export class FeatureFlagger {
+export class InternalFeatureFlagger {
   private ddb: AWS.DynamoDB.DocumentClient;
-  constructor({ region }: FeatureFlagOpts) {
+  constructor({ region }: InternalFeatureFlagOpts) {
     this.ddb = new AWS.DynamoDB.DocumentClient({
       apiVersion: "2012-08-10",
       region,
@@ -83,7 +83,9 @@ export class FeatureFlagger {
    * @param key
    * @returns the feature flag or undefined
    */
-  async get(key: FeatureFlagKey): Promise<FeatureFlag | undefined> {
+  async get(
+    key: InternalFeatureFlagKey
+  ): Promise<InternalFeatureFlag | undefined> {
     const { pk, sk } = this.key(key);
     const r = await this.ddb
       .get({
@@ -146,7 +148,7 @@ export class FeatureFlagger {
   //   await this.update({ ...key, enabled: false, options: undefined });
   // }
 
-  async delete(key: FeatureFlagKey): Promise<void> {
+  async delete(key: InternalFeatureFlagKey): Promise<void> {
     const { pk, sk } = this.key(key);
     await this.ddb
       .delete({
@@ -159,7 +161,9 @@ export class FeatureFlagger {
       .promise();
   }
 
-  async createOne(opts: CreateFeatureFlagOpts): Promise<FeatureFlag> {
+  async createOne(
+    opts: InternalCreateFeatureFlagOpts
+  ): Promise<InternalFeatureFlag> {
     const { namespace, customerId, featureId, enabled, options = {} } = opts;
     const { pk, sk } = this.key({ namespace, featureId, customerId });
     const ConditionExpression = "attribute_not_exists(pk)";
@@ -192,7 +196,7 @@ export class FeatureFlagger {
     featureId,
     enabled,
     options,
-  }: UpdateFeatureFlagOpts): Promise<void> {
+  }: InternalUpdateFeatureFlagOpts): Promise<void> {
     if (enabled !== undefined && options !== undefined) {
       throw Error(`can only update 'enabled' or 'options', but not both`);
     }
@@ -232,7 +236,7 @@ export class FeatureFlagger {
       .promise();
   }
 
-  private key(key: FeatureFlagKey): { pk: string; sk: string } {
+  private key(key: InternalFeatureFlagKey): { pk: string; sk: string } {
     const pk = key.customerId
       ? `${key.namespace}|C|${key.customerId}`
       : `${key.namespace}|FF|${key.featureId}`;

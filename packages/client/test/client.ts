@@ -5,15 +5,15 @@ async function main() {
     const ff = new FeatureFlagger({
       region: "us-west-2",
     });
-    const r = await ff.create({
+    const r = await ff.customerFeatureFlag.replace({
       namespace: "pepr",
-      customerId: 'person.id.something.3',
+      customerId: "person.id.something.3",
       featureId: "insurance_price_post_chase",
-      options: { prop: "test2" },
-      enabled: false,
+      options: { prop: "test1" },
+      enabled: true,
     });
 
-    const s = await ff.get({
+    const s = await ff.globalFeatureFlag.get({
       namespace: "pepr",
       featureId: "insurance_price_post_chase",
     });

@@ -1,28 +1,28 @@
 import { GlobalFeatureFlagger } from "./global.flag";
 import {
-  CreateFeatureFlagOpts,
-  FeatureFlag,
-  FeatureFlagger,
-  FeatureFlagKey,
-  FeatureFlagOpts,
-} from "./internal/feature.flag";
+  InternalCreateFeatureFlagOpts,
+  InternalFeatureFlag,
+  InternalFeatureFlagger,
+  InternalFeatureFlagKey,
+  InternalFeatureFlagOpts,
+} from "./internal/flagger";
 
-export interface CustomerFeatureFlagOpts extends FeatureFlagOpts {
+export interface CustomerFeatureFlagOpts extends InternalFeatureFlagOpts {
   globalFlagger: GlobalFeatureFlagger;
 }
-export type CustomerFeatureFlag = Required<FeatureFlag>;
-export type CustomerFeatureFlagKey = Required<FeatureFlagKey>;
+export type CustomerFeatureFlag = Required<InternalFeatureFlag>;
+export type CustomerFeatureFlagKey = Required<InternalFeatureFlagKey>;
 export type CreateCustomerFeatureFlag = Omit<
-  Required<CreateFeatureFlagOpts>,
+  Required<InternalCreateFeatureFlagOpts>,
   "overwrite"
 >;
 export type ReplaceCustomerFeatureFlag = CreateCustomerFeatureFlag;
 
 export class CustomerFeatureFlagger {
-  private fsvc: FeatureFlagger;
+  private fsvc: InternalFeatureFlagger;
   private gfsvc: GlobalFeatureFlagger;
   constructor(opts: CustomerFeatureFlagOpts) {
-    this.fsvc = new FeatureFlagger(opts);
+    this.fsvc = new InternalFeatureFlagger(opts);
     this.gfsvc = opts.globalFlagger;
   }
 
@@ -35,13 +35,13 @@ export class CustomerFeatureFlagger {
       }),
       this.fsvc.createOne({ ...opts, overwrite: false }),
     ]);
-    return <Required<FeatureFlag>>customerFlag;
+    return <Required<InternalFeatureFlag>>customerFlag;
   }
 
   async replace(
     opts: ReplaceCustomerFeatureFlag
   ): Promise<CustomerFeatureFlag> {
-    const ff = <Required<FeatureFlag>>await this.fsvc.createOne({
+    const ff = <Required<InternalFeatureFlag>>await this.fsvc.createOne({
       ...opts,
       overwrite: true,
     });
@@ -50,7 +50,7 @@ export class CustomerFeatureFlagger {
 
   async get(key: CustomerFeatureFlagKey): Promise<CustomerFeatureFlag> {
     const ff = await this.fsvc.get(key);
-    return <Required<FeatureFlag>>ff;
+    return <Required<InternalFeatureFlag>>ff;
   }
 
   async delete(key: CustomerFeatureFlagKey): Promise<void> {

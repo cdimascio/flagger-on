@@ -1,24 +1,24 @@
 import {
-  CreateFeatureFlagOpts,
-  FeatureFlag,
-  FeatureFlagger,
-  FeatureFlagKey,
-  FeatureFlagOpts,
-} from "./internal/feature.flag";
+  InternalCreateFeatureFlagOpts,
+  InternalFeatureFlag,
+  InternalFeatureFlagger,
+  InternalFeatureFlagKey,
+  InternalFeatureFlagOpts,
+} from "./internal/flagger";
 
-export type GlobalFeatureFlag = Omit<FeatureFlag, "customerId">;
-export interface GlobalFeatureFlagOpts extends FeatureFlagOpts {}
-export type GlobalFeatureFlagKey = Omit<FeatureFlagKey, "customerId">;
+export type GlobalFeatureFlag = Omit<InternalFeatureFlag, "customerId">;
+export interface GlobalFeatureFlagOpts extends InternalFeatureFlagOpts {}
+export type GlobalFeatureFlagKey = Omit<InternalFeatureFlagKey, "customerId">;
 export type CreateGlobalFeatureFlag = Omit<
-  CreateFeatureFlagOpts,
+  InternalCreateFeatureFlagOpts,
   "customerId" | "overwrite"
 >;
 export type ReplaceGlobalFeatureFlag = CreateGlobalFeatureFlag;
 
 export class GlobalFeatureFlagger {
-  private fsvc: FeatureFlagger;
+  private fsvc: InternalFeatureFlagger;
   constructor(opts: GlobalFeatureFlagOpts) {
-    this.fsvc = new FeatureFlagger(opts);
+    this.fsvc = new InternalFeatureFlagger(opts);
   }
 
   async create(opts: CreateGlobalFeatureFlag): Promise<GlobalFeatureFlag> {

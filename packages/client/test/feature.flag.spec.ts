@@ -1,8 +1,8 @@
 import "mocha";
 import { expect } from "chai";
-import { CreateFeatureFlagOpts, FeatureFlag, FeatureFlagger } from "../src";
+import { CreateFlagOptions, Flag, FeatureFlag } from "../src";
 
-const featureFlag = new FeatureFlagger({
+const featureFlag = new FeatureFlag({
   dynamodb: {
     apiVersion: "2012-08-10",
     region: "us-west-2",
@@ -16,7 +16,7 @@ describe("a feature flag", () => {
         namespace: "pepr_test",
         id: "feature_1111",
       },
-      options: {
+      config: {
         rollout: {
           percentage: 100,
         },
@@ -26,7 +26,7 @@ describe("a feature flag", () => {
     await featureFlag.delete(params.key);
     const ff = await featureFlag.create(params);
     expect(ff.enabled).to.be.true;
-    expect(ff.options).to.deep.equal(params.options);
+    expect(ff.config).to.deep.equal(params.config);
     await featureFlag.delete(params.key);
   });
 
@@ -36,19 +36,19 @@ describe("a feature flag", () => {
         namespace: "pepr_test",
         id: "feature_1111",
       },
-      options: { test: "prop", rollout: { percentage: 100 } },
+      config: { test: "prop", rollout: { percentage: 100 } },
       enabled: true,
     };
     const ff = await featureFlag.replace(params);
     expect(ff.enabled).to.be.true;
-    expect(ff.options).to.deep.equal(params.options);
+    expect(ff.config).to.deep.equal(params.config);
   });
 
   it("should delete successfully", async () => {
-    const create = async (params: CreateFeatureFlagOpts) => {
+    const create = async (params: CreateFlagOptions) => {
       const ff = await featureFlag.replace(params);
       expect(ff.enabled).to.be.true;
-      expect(ff.options).to.deep.equal(params.options);
+      expect(ff.config).to.deep.equal(params.config);
       return ff;
     };
     const params = {
@@ -56,7 +56,7 @@ describe("a feature flag", () => {
         namespace: "pepr_test",
         id: "feature_1112",
       },
-      options: { test: "prop", rollout: { percentage: 100 } },
+      config: { test: "prop", rollout: { percentage: 100 } },
       enabled: true,
     };
     await create(params);
@@ -71,7 +71,7 @@ describe("a feature flag", () => {
         namespace: "pepr_test",
         id: "feature_1112",
       },
-      options: {
+      config: {
         test: "prop",
         rollout: {
           percentage: 100,
@@ -108,7 +108,7 @@ describe("a feature flag", () => {
           namespace: "pepr_test",
           id: "feature_subject_111",
         },
-        options: {
+        config: {
           rollout: {
             percentage: 100,
           },
@@ -121,7 +121,7 @@ describe("a feature flag", () => {
       });
 
       it("should return disabled when a feature flag is enabled at 0 percent rollout", async () => {
-        params.options.rollout.percentage = 0;
+        params.config.rollout.percentage = 0;
         await featureFlag.replace(params);
 
         const a = await featureFlag.isEnabled(params.key, "customer_test_aaa");
@@ -129,7 +129,7 @@ describe("a feature flag", () => {
       });
 
       it("should return enabled when a feature flag is enabled at 100 percent rollout", async () => {
-        params.options.rollout.percentage = 100;
+        params.config.rollout.percentage = 100;
         await featureFlag.replace(params);
 
         const a = await featureFlag.isEnabled(params.key, "customer_test_aaa");
@@ -144,7 +144,7 @@ describe("a feature flag", () => {
         namespace: "pepr_test",
         id: "feature_1112",
       },
-      options: {
+      config: {
         test: "prop",
         rollout: {
           percentage: 100,
@@ -181,7 +181,7 @@ describe("a feature flag", () => {
           namespace: "pepr_test",
           id: "feature_subject_111",
         },
-        options: {
+        config: {
           rollout: {
             percentage: 100,
           },
@@ -194,7 +194,7 @@ describe("a feature flag", () => {
       });
 
       it("should return disabled when a feature flag is disabled at 100 percent rollout", async () => {
-        params.options.rollout.percentage = 100;
+        params.config.rollout.percentage = 100;
         await featureFlag.replace(params);
 
         const a = await featureFlag.isEnabled(params.key, "customer_test_aaa");
@@ -202,7 +202,7 @@ describe("a feature flag", () => {
       });
 
       it("should return disabled when a feature flag is enabled at 50 percent rollout", async () => {
-        params.options.rollout.percentage = 50;
+        params.config.rollout.percentage = 50;
         await featureFlag.replace(params);
 
         const a = await featureFlag.isEnabled(params.key, "customer_test_aaa");

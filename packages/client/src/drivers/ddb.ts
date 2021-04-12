@@ -1,9 +1,9 @@
 import AWS from "aws-sdk";
 import {
-  CreateFeatureFlagOpts,
-  FeatureFlagCompositeKey,
-  FeatureFlag,
-  ReplaceFeatureFlagOpts,
+  CreateFlagOptions,
+  FlagKey,
+  Flag,
+  ReplaceFlagOptions,
   UpdateFeatureFlagOpts,
 } from "../models";
 import { Driver } from "./models";
@@ -27,7 +27,7 @@ export class DdbFeatureFlagDriver implements Driver {
    * @param key
    * @returns the feature flag or undefined
    */
-  async get(key: FeatureFlagCompositeKey): Promise<FeatureFlag | undefined> {
+  async get(key: FlagKey): Promise<Flag | undefined> {
     const { pk, sk } = this.key(key);
     const r = await this.ddb
       .get({
@@ -42,13 +42,13 @@ export class DdbFeatureFlagDriver implements Driver {
     return data
       ? {
           key,
-          options: data.options,
+          config: data.config,
           enabled: data.enabled,
         }
       : undefined;
   }
 
-  async delete(key: FeatureFlagCompositeKey): Promise<void> {
+  async delete(key: FlagKey): Promise<void> {
     const { pk, sk } = this.key(key);
     await this.ddb
       .delete({
@@ -61,20 +61,16 @@ export class DdbFeatureFlagDriver implements Driver {
       .promise();
   }
 
-  async create(
-    opts: CreateFeatureFlagOpts | ReplaceFeatureFlagOpts
-  ): Promise<FeatureFlag> {
+  async create(opts: CreateFlagOptions | ReplaceFlagOptions): Promise<Flag> {
     return await this.createOne(opts, false);
   }
 
-  async replace(
-    opts: CreateFeatureFlagOpts | ReplaceFeatureFlagOpts
-  ): Promise<FeatureFlag> {
+  async replace(opts: CreateFlagOptions | ReplaceFlagOptions): Promise<Flag> {
     return await this.createOne(opts, true);
   }
 
   async update(opts: UpdateFeatureFlagOpts): Promise<void> {
-    if (opts.enabled !== undefined && opts.options !== undefined) {
+    if (opts.enabled !== undefined && opts.config !== undefined) {
       throw Error(`can only update 'enabled' or 'options', but not both`);
     }
     const { pk, sk } = this.key(opts);
@@ -89,10 +85,10 @@ export class DdbFeatureFlagDriver implements Driver {
       UpdateExpression = "set #enabled = :enabled";
     }
 
-    if (opts.options != undefined) {
-      ExpressionAttributeNames["#options"] = "options";
-      ExpressionAttributeValues[":options"] = opts.options;
-      UpdateExpression += "set #options = :options";
+    if (opts.config != undefined) {
+      ExpressionAttributeNames["#config"] = "config";
+      ExpressionAttributeValues[":config"] = opts.config;
+      UpdateExpression += "set #config = :config";
     }
 
     await this.ddb
@@ -111,11 +107,11 @@ export class DdbFeatureFlagDriver implements Driver {
   }
 
   private async createOne(
-    opts: CreateFeatureFlagOpts,
+    opts: CreateFlagOptions,
     overwrite: boolean
-  ): Promise<FeatureFlag> {
+  ): Promise<Flag> {
     const { pk, sk } = this.key(opts.key);
-    const { enabled, options } = opts;
+    const { enabled, config } = opts;
     const ConditionExpression = "attribute_not_exists(pk)";
     await this.ddb
       .put({
@@ -123,7 +119,7 @@ export class DdbFeatureFlagDriver implements Driver {
           pk,
           sk,
           enabled,
-          options,
+          config,
         },
         ReturnConsumedCapacity: "TOTAL",
         ...(overwrite ? {} : { ConditionExpression }),
@@ -134,11 +130,11 @@ export class DdbFeatureFlagDriver implements Driver {
     return {
       key: opts.key,
       enabled,
-      options,
+      config,
     };
   }
 
-  private key(key: FeatureFlagCompositeKey): { pk: string; sk: string } {
+  private key(key: FlagKey): { pk: string; sk: string } {
     const pk = `N|${key.namespace}|FF|${key.id}`;
     const sk = pk;
     return {

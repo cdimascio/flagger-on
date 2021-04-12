@@ -14,7 +14,7 @@
       "resolveJsonModule": true,
       "baseUrl": "."
     },
-    "include": ["src/**/*.ts", "../old/global.flag.ts", "../old/internal/flagger.ts"],
+    "include": ["src/**/*.ts", "../../_old/global.flag.ts", "../../_old/internal/flagger.ts"],
     "exclude": [
       "node_modules",
       "**/*.spec.ts"

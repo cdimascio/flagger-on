@@ -1,34 +1,32 @@
 import { DynamoDbOpts } from "./drivers/ddb";
 
-export interface FeatureFlagOpts {
+export interface Options {
   dynamodb?: DynamoDbOpts;
 }
 
-export interface FeatureFlagCompositeKey {
+export interface FlagKey {
   namespace: string;
   id: string;
 }
 
-export interface FeatureFlagRollout {
+export interface Rollout {
   percentage: number;
 }
 
-export interface FeatureFlagOptions {
-  rollout: FeatureFlagRollout;
+export interface FlagConfig {
+  rollout: Rollout;
   [key: string]: any;
 }
 
-export interface FeatureFlag {
-  key: FeatureFlagCompositeKey;
+export interface Flag {
+  key: FlagKey;
   enabled: boolean;
-  options: FeatureFlagOptions;
+  config: FlagConfig;
 }
 
-export type CreateFeatureFlagOpts = FeatureFlag;
-export type ReplaceFeatureFlagOpts = FeatureFlag;
-export interface UpdateFeatureFlagOpts extends FeatureFlagCompositeKey {
+export type CreateFlagOptions = Flag;
+export type ReplaceFlagOptions = Flag;
+export interface UpdateFeatureFlagOpts extends FlagKey {
   enabled?: boolean;
-  options?: FeatureFlagOptions;
+  config?: FlagConfig;
 }
-
-type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<T>;

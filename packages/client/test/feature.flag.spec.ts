@@ -1,8 +1,8 @@
 import "mocha";
 import { expect } from "chai";
-import { CreateFlagOptions, Flag, FeatureFlag } from "../src";
+import { CreateFlagOptions, Flaggeron } from "../src";
 
-const featureFlag = new FeatureFlag({
+const featureFlag = new Flaggeron({
   dynamodb: {
     apiVersion: "2012-08-10",
     region: "us-west-2",

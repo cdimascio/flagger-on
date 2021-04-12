@@ -10,7 +10,7 @@ import {
   ReplaceFlagOptions,
 } from "./models";
 
-export class FeatureFlag {
+export class Flaggeron {
   private driver: Driver;
   constructor(opts: Options) {
     this.driver = new DdbFeatureFlagDriver(opts.dynamodb ?? {});

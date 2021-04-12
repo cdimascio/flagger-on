@@ -17,7 +17,7 @@ Requires DynamoDB (additional DBs coming...)
 ## Usage
 
 ```javascript
-const f = new Flagger({
+const f = new Flaggeron({
   dynamodb: {
     apiVersion: "2012-08-10",
     region: "us-west-2",

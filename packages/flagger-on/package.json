@@ -11,7 +11,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/aws-sdk": "^2.7.0",
     "@types/chai": "^4.2.16",

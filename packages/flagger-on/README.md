@@ -1,4 +1,4 @@
-# flagger-on
+# ⛳ flagger-on
 
 Enable / disable feature flags globally and / or rollout to a percentage of customers.
 

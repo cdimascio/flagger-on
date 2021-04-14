@@ -5,7 +5,21 @@ async function main() {
     dynamodb: {
       apiVersion: "2012-08-10",
       region: "us-west-2",
+      endpoint: "http://localhost:8000",
     },
+  });
+
+  await f.replace({
+    key: {
+      namespace: "my_project",
+      id: "feature_1",
+    },
+    config: {
+      rollout: {
+        percentage: 100,
+      },
+    },
+    enabled: true,
   });
 
   const r = await f.isEnabled(

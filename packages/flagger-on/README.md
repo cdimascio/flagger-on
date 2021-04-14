@@ -131,6 +131,14 @@ f.delete({
 
 Create a DynamoDB Table with name `FeatureFlag`, partition key `pk`, and sort key `sk`
 
+Setup via CLI
+
+_NOTE: consider provisioned capacity, rather than `PAY_PER_REQUEST` to keep costs low_
+
+```
+aws dynamodb create-table --table-name FeatureFlag --key-schema AttributeName=pk,KeyType=HASH AttributeName=sk,KeyType=RANGE --attribute-definitions AttributeName=pk,AttributeType=S AttributeName=sk,AttributeType=S --billing-mod PAY_PER_REQUEST
+```
+
 Setup via CDK
 
 ```

@@ -2,6 +2,11 @@
 
 Enable / disable feature flags globally and / or rollout to a percentage of customers.
 
+<p align="center">
+<img src="https://github.com/cdimascio/flagger-on/blob/main/assets/flagger-on-pastel-logo.png?raw=true" width="600">
+</p>
+
+
 ## Install
 
 ```

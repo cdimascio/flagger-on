@@ -17,7 +17,7 @@ npm install flagger-on
 
 Requires DynamoDB (additional DBs coming...)
 
-(see [DynamoDB section for setup](README.md#DynamoDB_setup))
+(see the [DynamoDB Setup](README.md#DynamoDB-setup) section)
 
 ## Usage
 

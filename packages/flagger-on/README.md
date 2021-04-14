@@ -83,7 +83,7 @@ f.disable({
 
 Creates a feature flag
 
-`config.rollout.percentage` applies only to per subject rolouts e.g. customer
+`config.rollout.percentage` applies only to per subject rolouts e.g. customer (see isEnabled)
 
 ```javascript
 f.create({

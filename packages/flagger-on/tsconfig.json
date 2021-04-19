@@ -12,6 +12,7 @@
       "outDir": "dist",
       "typeRoots": ["node_modules/@types"],
       "resolveJsonModule": true,
+      "declaration": true,
       "baseUrl": "."
     },
     "include": ["src/**/*.ts"],

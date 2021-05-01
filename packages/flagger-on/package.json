@@ -1,6 +1,6 @@
 {
   "name": "flagger-on",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -27,5 +27,5 @@
     "aws-sdk": "^2.884.0",
     "crc": "^3.8.0"
   },
-  "gitHead": "5caa4f1f8e10158e43f75f130bd7fbc6f3fb8a28"
+  "gitHead": "b20c476b160aeae51ff025e3e604d02cbcca65a5"
 }

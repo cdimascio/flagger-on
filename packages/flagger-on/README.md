@@ -23,7 +23,21 @@ Requires DynamoDB (additional DB support coming...)
 const f = new Flaggeron({
   dynamodb: {
     apiVersion: "2012-08-10",
-    region: "us-west-2",
+    region: "<your-region>",
+  },
+});
+```
+
+or with DAX
+
+```javascript
+const f = new Flaggeron({
+  dynamodb: {
+    apiVersion: "2012-08-10",
+    service = new AmazonDaxClient({
+        endpoint: dax.endpoint,
+        region: '<your-region>',
+      });
   },
 });
 ```
@@ -158,12 +172,74 @@ aws dynamodb create-table --table-name FeatureFlag \
 
 Setup via CDK
 
-```
+```javacsript
 const table = new dynamodb.Table(this, "Table", {
-    partitionKey: { name: "pk", type: dynamodb.AttributeType.STRING },
-    sortKey: { name: "sk", type: dynamodb.AttributeType.STRING },
-    tableName: "FeatureFlag",
+      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+      tableName: 'FeatureFlag',
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
 });
+```
+
+## Dax Setup
+
+Setup via CDK
+
+```javascript
+ const daxSecurityGroup = new ec2.SecurityGroup(this, 'DaxSecurityGroup', {
+      vpc: props.vpc,
+      allowAllOutbound: true,
+      securityGroupName: 'dax-security-group',
+    });
+
+    daxSecurityGroup.connections.allowFromAnyIpv4(
+      new ec2.Port({
+        protocol: ec2.Protocol.TCP,
+        fromPort: 8111,
+        toPort: 8111,
+        stringRepresentation: 'DaxPort',
+      })
+    );
+
+    const subnetGroup = new dax.CfnSubnetGroup(this, 'DaxSubnetGroup', {
+      subnetIds: props.vpc.privateSubnets.map((s) => s.subnetId),
+      subnetGroupName: 'my-dax-subnet-group',
+    });
+
+    const daxRole = new iam.Role(this, 'DaxRole', {
+      assumedBy: new iam.ServicePrincipal('dax.amazonaws.com'),
+    });
+    daxRole.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          'dynamodb:DescribeTable',
+          'dynamodb:PutItem',
+          'dynamodb:GetItem',
+          'dynamodb:UpdateItem',
+          'dynamodb:DeleteItem',
+          'dynamodb:Query',
+          'dynamodb:Scan',
+          'dynamodb:BatchGetItem',
+          'dynamodb:BatchWriteItem',
+          'dynamodb:ConditionCheckItem',
+        ],
+        resources: [this.table.tableArn],
+      })
+    );
+
+    new dax.CfnCluster(this, 'DaxCluster', {
+      iamRoleArn: daxRole.roleArn,
+      clusterName: 'my-dax-cluster',
+      availabilityZones: props.vpc.availabilityZones,
+      nodeType: 'dax.t3.small',
+      replicationFactor: props.vpc.availabilityZones.length,
+      securityGroupIds: [daxSecurityGroup.securityGroupId],
+      subnetGroupName: subnetGroup.subnetGroupName,
+      sseSpecification: {
+        sseEnabled: true,
+      },
+    });
 ```
 
 ## License

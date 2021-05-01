@@ -135,8 +135,8 @@ export class DdbFeatureFlagDriver implements Driver {
   }
 
   private key(key: FlagKey): { pk: string; sk: string } {
-    const pk = `N|${key.namespace}|FF|${key.id}`;
-    const sk = pk;
+    const pk = `N|${key.namespace}`;
+    const sk = `${pk}|FF|${key.id}`;
     return {
       pk,
       sk,

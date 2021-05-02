@@ -1,6 +1,6 @@
 {
   "name": "example",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "private": true,
   "description": "",
   "main": "index.js",
@@ -11,6 +11,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "flagger-on": "^0.10.0"
+    "flagger-on": "^0.10.1"
   }
 }

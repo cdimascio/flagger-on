@@ -5,7 +5,8 @@ import {
   Flag,
   ReplaceFlagOptions,
   UpdateFeatureFlagOpts,
-} from "../models";
+  FindFlagsOptions,
+} from "./models";
 import { Driver } from "./models";
 
 export interface DdbFeatureFlagDriverOpts {
@@ -27,7 +28,7 @@ export class DdbFeatureFlagDriver implements Driver {
    * @param key
    * @returns the feature flag or undefined
    */
-  async get(key: FlagKey): Promise<Flag | undefined> {
+  async getFlag(key: FlagKey): Promise<Flag | undefined> {
     const { pk, sk } = this.key(key);
     const r = await this.ddb
       .get({
@@ -48,7 +49,36 @@ export class DdbFeatureFlagDriver implements Driver {
       : undefined;
   }
 
-  async delete(key: FlagKey): Promise<void> {
+  async getFlags(opts: FindFlagsOptions): Promise<Flag[]> {
+    const pk = `N|${opts.namespace}`;
+
+    const sk = `${pk}|FF|${opts.idPrefix ?? ""}`;
+    const r = await this.ddb
+      .query({
+        KeyConditionExpression: "#pk = :pk and begins_with(#sk, :sk)",
+        ExpressionAttributeNames: {
+          "#pk": "pk",
+          "#sk": "sk",
+        },
+        ExpressionAttributeValues: {
+          ":pk": pk,
+          ":sk": sk,
+        },
+        TableName,
+      })
+      .promise();
+    const data = <unknown[]>r.Items;
+    return data.map((d: any) => ({
+      key: {
+        namespace: opts.namespace,
+        id: d.sk.split("|FF|")[1],
+      },
+      enabled: d.enabled,
+      config: d.config,
+    }));
+  }
+
+  async deleteFlag(key: FlagKey): Promise<void> {
     const { pk, sk } = this.key(key);
     await this.ddb
       .delete({
@@ -59,17 +89,18 @@ export class DdbFeatureFlagDriver implements Driver {
         },
       })
       .promise();
+    return;
   }
 
-  async create(opts: CreateFlagOptions | ReplaceFlagOptions): Promise<Flag> {
+  async createFlag(opts: CreateFlagOptions | ReplaceFlagOptions): Promise<Flag> {
     return await this.createOne(opts, false);
   }
 
-  async replace(opts: CreateFlagOptions | ReplaceFlagOptions): Promise<Flag> {
+  async replaceFlag(opts: CreateFlagOptions | ReplaceFlagOptions): Promise<Flag> {
     return await this.createOne(opts, true);
   }
 
-  async update(opts: UpdateFeatureFlagOpts): Promise<void> {
+  async updateFlag(opts: UpdateFeatureFlagOpts): Promise<void> {
     if (opts.enabled !== undefined && opts.config !== undefined) {
       throw Error(`can only update 'enabled' or 'options', but not both`);
     }

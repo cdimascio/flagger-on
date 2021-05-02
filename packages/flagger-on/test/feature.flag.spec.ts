@@ -1,6 +1,10 @@
 import "mocha";
 import { expect } from "chai";
-import { CreateFlagOptions, Flag, Flaggeron } from "../src";
+import {
+  CreateFlagOptions,
+  Flag,
+  FlaggeronWithNamespace as Flaggeron,
+} from "../src";
 
 const flaggeron = new Flaggeron({
   namespace: "my_namspace_test",

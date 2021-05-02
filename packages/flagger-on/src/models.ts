@@ -12,8 +12,11 @@ export interface NamespacedFlag extends Flag {
   namespace: string;
 }
 export interface Options {
-  namespace: string;
   dynamodb?: DynamoDbOpts;
+}
+
+export interface OptionsWithNamespace extends Options {
+  namespace: string;
 }
 
 export interface CreateFlagOptions {

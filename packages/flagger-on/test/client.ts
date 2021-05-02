@@ -6,7 +6,7 @@ async function main() {
       region: "us-west-2",
     });
     const r = await ff.customerFeatureFlag.replace({
-      namespace: "pepr",
+      namespace: "my_namespace",
       customerId: "person.id.something.3",
       featureId: "insurance_price_post_chase",
       options: { prop: "test1" },
@@ -14,12 +14,12 @@ async function main() {
     });
 
     const s = await ff.globalFeatureFlag.get({
-      namespace: "pepr",
+      namespace: "my_namespace",
       featureId: "insurance_price_post_chase",
     });
     console.log(s);
     // await ff.disable({
-    //   namespace: "pepr",
+    //   namespace: "my_namespace",
     //   featureId: "insurance_price_post_chase",
     // });
     // console.log("done", r);

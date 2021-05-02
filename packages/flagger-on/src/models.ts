@@ -1,32 +1,25 @@
 import { DynamoDbOpts } from "./drivers/ddb";
+import { FlagConfig } from "./drivers/models";
 
+export { FlagConfig } from "./drivers/models";
+
+export interface Flag {
+  featureId: string;
+  enabled: boolean;
+  config: FlagConfig;
+}
+export interface NamespacedFlag extends Flag {
+  namespace: string;
+}
 export interface Options {
+  namespace: string;
   dynamodb?: DynamoDbOpts;
 }
 
-export interface FlagKey {
-  namespace: string;
-  id: string;
-}
-
-export interface Rollout {
-  percentage: number;
-}
-
-export interface FlagConfig {
-  rollout: Rollout;
-  [key: string]: any;
-}
-
-export interface Flag {
-  key: FlagKey;
+export interface CreateFlagOptions {
+  featureId: string;
   enabled: boolean;
   config: FlagConfig;
 }
 
-export type CreateFlagOptions = Flag;
-export type ReplaceFlagOptions = Flag;
-export interface UpdateFeatureFlagOpts extends FlagKey {
-  enabled?: boolean;
-  config?: FlagConfig;
-}
+export type ReplaceFlagOptions = CreateFlagOptions;

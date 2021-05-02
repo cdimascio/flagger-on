@@ -6,7 +6,6 @@ Enable / disable feature flags globally and / or rollout to a percentage of cust
 <img src="https://github.com/cdimascio/flagger-on/blob/main/assets/flagger-on-pastel-logo.png?raw=true" width="600">
 </p>
 
-
 ## Install
 
 ```
@@ -21,6 +20,7 @@ Requires DynamoDB (additional DB support coming...)
 
 ```javascript
 const f = new Flaggeron({
+  namespace: "my_namepace",
   dynamodb: {
     apiVersion: "2012-08-10",
     region: "<your-region>",
@@ -32,6 +32,7 @@ or with DAX
 
 ```javascript
 const f = new Flaggeron({
+  namespace: 'my_namepace',
   dynamodb: {
     apiVersion: "2012-08-10",
     service = new AmazonDaxClient({
@@ -55,29 +56,25 @@ See [DynamoDB Setup](README.md#DynamoDB-setup) for additional setup options .
 
 ## API
 
-## isEnabled(key, subject?)
+## getFlags(featureIdPrefix?: string)
 
-Checks whether a feature flag is globally _**active**_ and/or active for a given _**subject identifier**_ e.g. customer id.
-
-Enabled globally
+Retrieves the set of flags in this namespace that match the feature prefix. If no prefix is specified all flags in this namespace are returned.
 
 ```javascript
-f.isEnabled({
-  namespace: "my_project",
-  id: "feature_1",
-});
+// Retrievs flags that match the feature prefix
+// if the following features exist, my.feature.1, my.feature.2, all will be returned
+f.getFlags('my.feature);
 ```
 
-Enabled for a subject identifier e.g. customer id
+## getFlagsForSubject(subjectId: string, featureIdPrefix?: string)
+
+Retrieves the set of flags in this namespace for the given subject e.g. customer that match the feature prefix. If no prefix is specified all flags in this namespace are returned.
+
+Flags are enabled per subject as defined by the rollout configuration. See `createFlag` and `replaceFlag`
 
 ```javascript
-f.isEnabled(
-  {
-    namespace: "my_project",
-    id: "feature_1",
-  },
-  "customer_id_12345" // must be unique per subject
-);
+// Retrievs flags for subject user-12345 that match the feature prefix
+f.getFlagsForSubject("user-12345", "my.feature");
 ```
 
 ## enable
@@ -85,10 +82,7 @@ f.isEnabled(
 Enables a feature flag
 
 ```javascript
-f.enable({
-  namespace: "my_project",
-  id: "feature_1",
-});
+f.enableFlag((id: "my.feature.1"));
 ```
 
 ## disable
@@ -96,28 +90,26 @@ f.enable({
 Disables a feature flag
 
 ```javascript
-f.disable({
-  namespace: "my_project",
-  id: "feature_1",
-});
+f.disableFlag("my.feature.1");
 ```
 
 ### create
 
 Creates a feature flag
 
-`config.rollout.percentage` applies only to per subject rolouts e.g. customer (see isEnabled)
+`config.rollout.percentage` applies only to per subject rolouts e.g. customer (see `getFlagForSubject`)
 
 ```javascript
-f.create({
-  key: {
-    namespace: "my_project",
-    id: "feature_1",
-  },
+f.createFlag({
+  id: "my.feature.1",
   config: {
     rollout: {
-      percentage: 100,
+      percentage: 100, // rollout to 100 percent of the subject population
     },
+  },
+  data: {
+    // custom properties
+    myProp: "my value",
   },
   enabled: true,
 });
@@ -130,14 +122,11 @@ Reaplce a feature flag
 `config.rollout.percentage` applies only to per subject rolouts e.g. customer
 
 ```javascript
-f.replace({
-  key: {
-    namespace: "my_project",
-    id: "feature_1",
-  },
+f.replaceFlag({
+  id: "my.feature.1",
   config: {
     rollout: {
-      percentage: 100,
+      percentage: 80, // rollout to 80 percent of the subject population
     },
   },
   enabled: true,
@@ -149,10 +138,7 @@ f.replace({
 Deletes a feature flag
 
 ```javascript
-f.delete({
-  namespace: "my_project",
-  id: "feature_1",
-});
+f.deleteFlag("my.feature.1");
 ```
 
 ## DynamoDB setup
@@ -186,60 +172,60 @@ const table = new dynamodb.Table(this, "Table", {
 Setup via CDK
 
 ```javascript
- const daxSecurityGroup = new ec2.SecurityGroup(this, 'DaxSecurityGroup', {
-      vpc: props.vpc,
-      allowAllOutbound: true,
-      securityGroupName: 'dax-security-group',
-    });
+const daxSecurityGroup = new ec2.SecurityGroup(this, "DaxSecurityGroup", {
+  vpc: props.vpc,
+  allowAllOutbound: true,
+  securityGroupName: "dax-security-group",
+});
 
-    daxSecurityGroup.connections.allowFromAnyIpv4(
-      new ec2.Port({
-        protocol: ec2.Protocol.TCP,
-        fromPort: 8111,
-        toPort: 8111,
-        stringRepresentation: 'DaxPort',
-      })
-    );
+daxSecurityGroup.connections.allowFromAnyIpv4(
+  new ec2.Port({
+    protocol: ec2.Protocol.TCP,
+    fromPort: 8111,
+    toPort: 8111,
+    stringRepresentation: "DaxPort",
+  })
+);
 
-    const subnetGroup = new dax.CfnSubnetGroup(this, 'DaxSubnetGroup', {
-      subnetIds: props.vpc.privateSubnets.map((s) => s.subnetId),
-      subnetGroupName: 'my-dax-subnet-group',
-    });
+const subnetGroup = new dax.CfnSubnetGroup(this, "DaxSubnetGroup", {
+  subnetIds: props.vpc.privateSubnets.map((s) => s.subnetId),
+  subnetGroupName: "my-dax-subnet-group",
+});
 
-    const daxRole = new iam.Role(this, 'DaxRole', {
-      assumedBy: new iam.ServicePrincipal('dax.amazonaws.com'),
-    });
-    daxRole.addToPrincipalPolicy(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        actions: [
-          'dynamodb:DescribeTable',
-          'dynamodb:PutItem',
-          'dynamodb:GetItem',
-          'dynamodb:UpdateItem',
-          'dynamodb:DeleteItem',
-          'dynamodb:Query',
-          'dynamodb:Scan',
-          'dynamodb:BatchGetItem',
-          'dynamodb:BatchWriteItem',
-          'dynamodb:ConditionCheckItem',
-        ],
-        resources: [this.table.tableArn],
-      })
-    );
+const daxRole = new iam.Role(this, "DaxRole", {
+  assumedBy: new iam.ServicePrincipal("dax.amazonaws.com"),
+});
+daxRole.addToPrincipalPolicy(
+  new iam.PolicyStatement({
+    effect: iam.Effect.ALLOW,
+    actions: [
+      "dynamodb:DescribeTable",
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
+      "dynamodb:UpdateItem",
+      "dynamodb:DeleteItem",
+      "dynamodb:Query",
+      "dynamodb:Scan",
+      "dynamodb:BatchGetItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:ConditionCheckItem",
+    ],
+    resources: [this.table.tableArn],
+  })
+);
 
-    new dax.CfnCluster(this, 'DaxCluster', {
-      iamRoleArn: daxRole.roleArn,
-      clusterName: 'my-dax-cluster',
-      availabilityZones: props.vpc.availabilityZones,
-      nodeType: 'dax.t3.small',
-      replicationFactor: props.vpc.availabilityZones.length,
-      securityGroupIds: [daxSecurityGroup.securityGroupId],
-      subnetGroupName: subnetGroup.subnetGroupName,
-      sseSpecification: {
-        sseEnabled: true,
-      },
-    });
+new dax.CfnCluster(this, "DaxCluster", {
+  iamRoleArn: daxRole.roleArn,
+  clusterName: "my-dax-cluster",
+  availabilityZones: props.vpc.availabilityZones,
+  nodeType: "dax.t3.small",
+  replicationFactor: props.vpc.availabilityZones.length,
+  securityGroupIds: [daxSecurityGroup.securityGroupId],
+  subnetGroupName: subnetGroup.subnetGroupName,
+  sseSpecification: {
+    sseEnabled: true,
+  },
+});
 ```
 
 ## License

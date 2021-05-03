@@ -56,7 +56,7 @@ See [DynamoDB Setup](README.md#DynamoDB-setup) for additional setup options .
 
 ## API
 
-## getFlags(featureIdPrefix?: string)
+## getFlags(featurePrefix?: string)
 
 Retrieves the set of flags in this namespace that match the feature prefix. If no prefix is specified all flags in this namespace are returned.
 
@@ -66,7 +66,7 @@ Retrieves the set of flags in this namespace that match the feature prefix. If n
 f.getFlags('my.feature');
 ```
 
-## getFlagsForSubject(subjectId: string, featureIdPrefix?: string)
+## getFlagsForSubject(subject: string, featurePrefix?: string)
 
 Retrieves the set of flags in this namespace for the given subject e.g. customer that match the feature prefix. If no prefix is specified all flags in this namespace are returned.
 

@@ -63,7 +63,7 @@ Retrieves the set of flags in this namespace that match the feature prefix. If n
 ```javascript
 // Retrievs flags that match the feature prefix
 // if the following features exist, my.feature.1, my.feature.2, all will be returned
-f.getFlags('my.feature);
+f.getFlags('my.feature');
 ```
 
 ## getFlagsForSubject(subjectId: string, featureIdPrefix?: string)
